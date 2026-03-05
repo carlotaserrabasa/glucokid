@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GlucoKid</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f4ff;--white:#fff;--blue:#3b6cf7;--blue-light:#e8edff;
+  --green:#22c55e;--green-light:#dcfce7;--yellow:#f59e0b;--yellow-light:#fef3c7;
+  --red:#ef4444;--red-light:#fee2e2;--orange:#f97316;--orange-light:#ffedd5;
+  --text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:16px;
+  --shadow:0 4px 24px rgba(59,108,247,.10);
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── LOGIN ── */
+#loginScreen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;
+}
+.login-box{
+  background:var(--white);border-radius:24px;padding:40px 36px;
+  box-shadow:0 8px 48px rgba(59,108,247,.15);width:100%;max-width:440px;text-align:center;
+}
+.login-logo{font-family:'DM Serif Display',serif;font-size:2.4rem;color:var(--blue);margin-bottom:4px}
+.login-sub{color:var(--muted);font-size:0.9rem;font-weight:600;margin-bottom:32px}
+.login-label{font-size:0.85rem;font-weight:700;color:var(--muted);text-align:left;display:block;margin-bottom:8px}
+.login-name-input{
+  width:100%;background:var(--bg);border:2px solid var(--border);border-radius:12px;
+  padding:14px 16px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;
+  color:var(--text);outline:none;margin-bottom:16px;transition:border-color .2s;
+}
+.login-name-input:focus{border-color:var(--blue)}
+.caregiver-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.caregiver-btn{
+  background:var(--bg);border:2px solid var(--border);border-radius:12px;
+  padding:14px 10px;cursor:pointer;transition:all .2s;font-family:'Nunito',sans-serif;
+  font-weight:700;font-size:0.85rem;color:var(--text);
+}
+.caregiver-btn:hover,.caregiver-btn.selected{background:var(--blue-light);border-color:var(--blue);color:var(--blue)}
+.caregiver-btn .icon{font-size:1.6rem;display:block;margin-bottom:4px}
+.login-enter-btn{
+  width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;
+  padding:16px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.05rem;
+  cursor:pointer;transition:all .2s;
+}
+.login-enter-btn:hover{background:#2554e0}
+.login-enter-btn:disabled{background:var(--border);cursor:not-allowed}
+.or-divider{color:var(--muted);font-size:0.8rem;font-weight:700;margin:12px 0;text-align:center}
+
+/* ── APP ── */
+#appShell{display:none}
+.header{
+  background:var(--white);border-bottom:1px solid var(--border);padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(59,108,247,.08);
+  flex-wrap:wrap;gap:8px;
+}
+.logo{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--blue);display:flex;align-items:center;gap:6px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.user-chip{
+  background:var(--blue-light);border-radius:100px;padding:6px 14px;
+  font-size:0.8rem;font-weight:800;color:var(--blue);display:flex;align-items:center;gap:6px;
+}
+.logout-btn{
+  background:transparent;border:1px solid var(--border);border-radius:100px;
+  padding:6px 12px;font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:700;
+  cursor:pointer;color:var(--muted);transition:all .2s;
+}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+.nav-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.nav-btn{
+  background:transparent;border:2px solid var(--border);border-radius:100px;
+  padding:7px 14px;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:700;
+  cursor:pointer;color:var(--muted);transition:all .2s;
+}
+.nav-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.nav-btn:hover:not(.active){border-color:var(--blue);color:var(--blue)}
+
+/* ── SCREENS ── */
+.screen{display:none;padding:28px 20px;max-width:720px;margin:0 auto}
+.screen.active{display:block}
+.card{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:18px}
+.card-title{font-size:.9rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.single{grid-template-columns:1fr}
+.form-row.triple{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+label{font-size:.82rem;font-weight:700;color:var(--muted)}
+input[type=text],input[type=number],select,textarea{
+  background:var(--bg);border:2px solid var(--border);border-radius:10px;
+  padding:11px 13px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:600;
+  color:var(--text);outline:none;transition:border-color .2s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+.btn{border:none;border-radius:12px;padding:13px 22px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:800;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#2554e0;transform:translateY(-1px)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#16a34a}
+.btn-full{width:100%;justify-content:center}
+
+/* ── FOOD SYSTEM ── */
+.food-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.food-item{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg);border-radius:10px;padding:10px 12px;
+}
+.food-name{flex:1;font-weight:700;font-size:.88rem}
+.food-detail{font-size:.75rem;color:var(--muted);font-weight:600}
+.portion-ctrl{display:flex;align-items:center;gap:6px}
+.portion-btn{
+  width:30px;height:30px;border-radius:8px;border:2px solid var(--border);
+  background:var(--white);font-size:1.1rem;font-weight:900;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--blue);
+}
+.portion-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.portion-val{font-weight:900;font-size:1rem;min-width:24px;text-align:center;color:var(--text)}
+.remove-btn{
+  background:var(--red-light);border:none;border-radius:8px;color:var(--red);
+  font-size:1rem;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;
+}
+.add-food-btn{
+  background:var(--blue-light);border:2px dashed var(--blue);border-radius:10px;
+  color:var(--blue);font-family:'Nunito',sans-serif;font-weight:800;padding:10px;
+  cursor:pointer;width:100%;font-size:.88rem;
+}
+.meal-added-item{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--green-light);border-radius:10px;padding:8px 12px;font-size:.85rem;
+}
+.meal-added-item strong{color:var(--green)}
+
+/* ── GLUCOSE ── */
+.glucose-display{text-align:center;padding:16px 0}
+.glucose-value{font-family:'DM Serif Display',serif;font-size:4.5rem;line-height:1;transition:color .4s}
+.glucose-unit{font-size:.9rem;color:var(--muted);font-weight:700;margin-top:2px}
+.glucose-status{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;font-weight:800;font-size:.85rem;margin-top:10px}
+
+/* ── RESULT ── */
+.result-box{border-radius:var(--radius);padding:22px;margin-top:18px;display:none;animation:slideUp .3s ease}
+.result-box.show{display:block}
+@keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.result-box.ok{background:var(--green-light);border:2px solid var(--green)}
+.result-box.warn{background:var(--yellow-light);border:2px solid var(--yellow)}
+.result-box.danger{background:var(--red-light);border:2px solid var(--red)}
+.result-box.info{background:var(--blue-light);border:2px solid var(--blue)}
+.result-title{font-size:1.1rem;font-weight:900;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.result-body{font-size:.9rem;line-height:1.7;font-weight:600}
+.result-body ul{padding-left:18px;margin-top:8px}
+.result-body li{margin-bottom:5px}
+.insulin-pill{display:inline-block;background:var(--blue);color:#fff;border-radius:100px;padding:3px 14px;font-size:1.1rem;font-weight:900;margin:6px 4px 0}
+.tolerance-note{
+  background:rgba(255,255,255,0.6);border-radius:8px;padding:8px 12px;
+  font-size:.78rem;font-weight:700;margin-top:10px;color:var(--muted);
+  border-left:3px solid var(--blue);
+}
+
+/* ── CAREGIVER CONFIG ── */
+.caregiver-list{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.caregiver-row{
+  background:var(--bg);border-radius:12px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.caregiver-row .icon-big{font-size:1.8rem}
+.caregiver-info{flex:1;min-width:120px}
+.caregiver-name-edit{font-weight:800;font-size:.92rem;background:transparent;border:none;border-bottom:2px solid var(--border);padding:2px 4px;width:120px;font-family:'Nunito',sans-serif;color:var(--text)}
+.caregiver-name-edit:focus{outline:none;border-color:var(--blue)}
+.tolerance-input-wrap{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700;color:var(--muted)}
+.tolerance-input-wrap input{width:60px;padding:6px 8px;font-size:.85rem}
+.add-caregiver-btn{
+  background:var(--blue-light);border:2px dashed var(--blue);border-radius:10px;
+  color:var(--blue);font-family:'Nunito',sans-serif;font-weight:800;padding:10px;
+  cursor:pointer;width:100%;font-size:.88rem;
+}
+
+/* ── EMERGENCY ── */
+.emergency-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.emerg-card{border-radius:12px;padding:16px;cursor:pointer;transition:transform .2s,box-shadow .2s;border:2px solid transparent}
+.emerg-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.emerg-card.low{background:var(--blue-light);border-color:var(--blue)}
+.emerg-card.high-mild{background:var(--yellow-light);border-color:var(--yellow)}
+.emerg-card.high-severe{background:var(--orange-light);border-color:var(--orange)}
+.emerg-card.critical{background:var(--red-light);border-color:var(--red)}
+.emerg-icon{font-size:1.8rem;margin-bottom:6px}
+.emerg-title{font-weight:900;font-size:.9rem;margin-bottom:2px}
+.emerg-desc{font-size:.75rem;color:var(--muted);font-weight:600}
+.emerg-detail{display:none;border-radius:var(--radius);padding:22px;margin-top:14px;animation:slideUp .3s ease}
+.emerg-detail.show{display:block}
+.step-list{list-style:none;padding:0}
+.step-list li{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-weight:600;font-size:.88rem;line-height:1.5}
+.step-num{min-width:26px;height:26px;border-radius:50%;background:var(--white);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0}
+
+/* ── PROFILE CHIP ── */
+.profile-chip{background:var(--blue-light);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.profile-avatar{width:44px;height:44px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.profile-name-big{font-weight:900;font-size:1rem}
+.profile-meta{font-size:.78rem;color:var(--muted);font-weight:600;margin-top:2px}
+.caregiver-active-chip{
+  background:var(--green-light);border-radius:100px;padding:3px 10px;
+  font-size:.75rem;font-weight:800;color:var(--green);display:inline-flex;align-items:center;gap:4px;
+  margin-left:8px;
+}
+.tolerance-active-chip{
+  background:var(--yellow-light);border-radius:100px;padding:3px 10px;
+  font-size:.73rem;font-weight:800;color:#92400e;display:inline-flex;align-items:center;gap:4px;
+}
+
+/* ── SAVED BADGE ── */
+.saved-badge{background:var(--green-light);color:var(--green);border-radius:100px;padding:5px 12px;font-size:.78rem;font-weight:800;display:none;align-items:center;gap:5px}
+.saved-badge.show{display:inline-flex}
+
+/* ── RANGE BAR ── */
+.range-bar{background:linear-gradient(90deg,var(--red) 0%,var(--yellow) 20%,var(--green) 40%,var(--green) 60%,var(--yellow) 80%,var(--red) 100%);height:10px;border-radius:100px;margin:10px 0 4px;position:relative}
+.range-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);font-weight:700}
+
+@media(max-width:500px){
+  .form-row{grid-template-columns:1fr}
+  .form-row.triple{grid-template-columns:1fr 1fr}
+  .emergency-grid{grid-template-columns:1fr}
+  .caregiver-grid{grid-template-columns:1fr 1fr}
+  .glucose-value{font-size:3.8rem}
+  .header{padding:10px 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">💙 GlucoKid</div>
+    <div class="login-sub">Qui ets avui?</div>
+
+    <div class="caregiver-grid" id="loginGrid"></div>
+
+    <div class="or-divider">— o escriu el teu nom —</div>
+    <input class="login-name-input" id="customNameInput" type="text" placeholder="Ex: Tieta Marta, Profe Laia..."/>
+
+    <button class="login-enter-btn" id="loginBtn" onclick="doLogin()" disabled>
+      Entrar →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="appShell">
+  <div class="header">
+    <div class="logo">💙 <span>Gluco<b>Kid</b></span></div>
+    <div class="header-right">
+      <div class="user-chip" id="userChip">👤 —</div>
+      <button class="logout-btn" onclick="doLogout()">↩ Sortir</button>
+    </div>
+  </div>
+  <div style="background:var(--white);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;gap:6px;flex-wrap:wrap">
+    <button class="nav-btn active" id="nav-daily" onclick="showScreen('daily',this)">📊 Consulta</button>
+    <button class="nav-btn" id="nav-config" onclick="showScreen('config',this)">⚙️ Configuració</button>
+    <button class="nav-btn" id="nav-emergency" onclick="showScreen('emergency',this)">🚨 Emergències</button>
+  </div>
+
+  <!-- DAILY -->
+  <div class="screen active" id="screen-daily">
+    <div id="dailyProfileChip"></div>
+
+    <div class="card">
+      <div class="card-title">📏 Pas 1 — Nivell de glucosa actual</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Introdueix el valor del glucòmetre (mg/dL)</label>
+          <input type="number" id="currentGlucose" placeholder="Ex: 120" min="20" max="600" oninput="updateGlucoseDisplay()"/>
+        </div>
+      </div>
+      <div class="glucose-display">
+        <div class="glucose-value" id="glucoseVal" style="color:var(--muted)">—</div>
+        <div class="glucose-unit">mg/dL</div>
+        <div id="glucoseStatus"></div>
+      </div>
+      <div class="range-bar"></div>
+      <div class="range-labels"><span>Baix</span><span>Normal</span><span>Alt</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🍽️ Pas 2 — Aliments de l'àpat</div>
+      <p style="font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:14px">
+        Selecciona els aliments i ajusta les <strong>racions</strong> (1 ració = la porció estàndard definida per la mare/pare).
+      </p>
+      <div class="food-list" id="foodPickerList"></div>
+      <div id="mealSummary" style="margin-top:14px;display:flex;flex-direction:column;gap:6px"></div>
+      <div style="margin-top:16px;padding-top:14px;border-top:2px dashed var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:800;font-size:.88rem;color:var(--muted)">Total carbohidrats:</span>
+        <span id="totalCarbs" style="font-size:1.3rem;font-weight:900;color:var(--blue)">0 g</span>
+      </div>
+      <div id="toleranceInfo" style="display:none" class="tolerance-note"></div>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="calculate()" style="font-size:1rem;padding:16px">
+      🔍 Calcular recomanació
+    </button>
+    <div class="result-box" id="resultBox">
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-body" id="resultBody"></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="screen" id="screen-config">
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between">
+        👶 Dades del nen
+        <span class="saved-badge" id="savedBadge">✓ Desat</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Nom</label><input type="text" id="childName" placeholder="Ex: Marc"/></div>
+        <div class="form-group"><label>Edat</label><input type="number" id="childAge" placeholder="8" min="1" max="18"/></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎯 Rangs de glucosa (mg/dL)</div>
+      <div class="form-row">
+        <div class="form-group"><label>⬇️ Límit baix (hipoglicèmia)</label><input type="number" id="rangeLow" value="70"/></div>
+        <div class="form-group"><label>✅ Objectiu mínim</label><input type="number" id="rangeTargetLow" value="80"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>✅ Objectiu màxim</label><input type="number" id="rangeTargetHigh" value="140"/></div>
+        <div class="form-group"><label>⬆️ Límit alt</label><input type="number" id="rangeHigh" value="180"/></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💉 Insulina</div>
+      <div class="form-row">
+        <div class="form-group"><label>Ràtio insulina/CH (u per g CH)</label><input type="number" id="insulinRatio" value="0.1" step="0.01"/></div>
+        <div class="form-group"><label>Factor correcció (u per 50mg/dL sobre objectiu)</label><input type="number" id="correctionFactor" value="1" step="0.5"/></div>
+      </div>
+      <div style="background:var(--blue-light);border-radius:10px;padding:10px 13px;font-size:.8rem;color:var(--blue);font-weight:700">
+        ℹ️ Valors proporcionats pel metge o educador diabetòleg.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🥗 Aliments predefinits (racions)</div>
+      <p style="font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:14px">
+        Defineix cada aliment amb la <strong>quantitat d'una ració estàndard</strong> i els seus carbohidrats. 
+        Exemple: "Arròs bullit" = 1 ràció = 100g = 28g de CH. Si el nen en menja 200g, l'usuari posarà <strong>2 racions</strong>.
+      </p>
+      <div class="food-list" id="configFoodList"></div>
+      <button class="add-food-btn" onclick="addConfigFood()">＋ Afegir aliment</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">👥 Cuidadors i marges de tolerància</div>
+      <p style="font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:14px">
+        Pots indicar per a cada cuidador si tendeix a donar <strong>més o menys menjar</strong> del que declara. 
+        Exemple: si la iaia sol donar un 10% més, posa +10%. El sistema ajustarà el càlcul automàticament.
+      </p>
+      <div class="caregiver-list" id="caregiverConfigList"></div>
+      <button class="add-caregiver-btn" onclick="addCaregiverConfig()">＋ Afegir cuidador</button>
+    </div>
+
+    <button class="btn btn-success btn-full" onclick="saveConfig()" style="font-size:1rem;padding:15px">
+      💾 Desar configuració
+    </button>
+  </div>
+
+  <!-- EMERGENCY -->
+  <div class="screen" id="screen-emergency">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">🚨 Protocols d'emergència</div>
+      <p style="font-size:.88rem;color:var(--muted);font-weight:600;line-height:1.6">
+        Selecciona la situació per veure els passos. En cas de dubte, <strong style="color:var(--red)">truca al 112</strong>.
+      </p>
+    </div>
+    <div class="emergency-grid">
+      <div class="emerg-card low" onclick="showEmergency('low')">
+        <div class="emerg-icon">📉</div>
+        <div class="emerg-title">Hipoglicèmia</div>
+        <div class="emerg-desc">Glucosa baixa · &lt;70 mg/dL</div>
+      </div>
+      <div class="emerg-card high-mild" onclick="showEmergency('highMild')">
+        <div class="emerg-icon">📈</div>
+        <div class="emerg-title">Hiperglicèmia lleu</div>
+        <div class="emerg-desc">180–300 mg/dL</div>
+      </div>
+      <div class="emerg-card high-severe" onclick="showEmergency('highSevere')">
+        <div class="emerg-icon">⚠️</div>
+        <div class="emerg-title">Hiperglicèmia severa</div>
+        <div class="emerg-desc">Possible cetosi · &gt;300 mg/dL</div>
+      </div>
+      <div class="emerg-card critical" onclick="showEmergency('critical')">
+        <div class="emerg-icon">🆘</div>
+        <div class="emerg-title">Molt malament</div>
+        <div class="emerg-desc">Inconscient / no respon</div>
+      </div>
+    </div>
+    <div class="emerg-detail" id="emergDetail"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════
+//  ESTAT
+// ═══════════════════════════
+let currentUser = null; // {name, icon, tolerance}
+
+let config = {
+  name: 'El nen', age: '',
+  rangeLow:70, rangeTargetLow:80, rangeTargetHigh:140, rangeHigh:180,
+  insulinRatio:0.1, correctionFactor:1,
+  foods:[
+    {name:'Pa de motlle', unit:'llesca', carbsPerRation:12},
+    {name:'Arròs bullit', unit:'100g', carbsPerRation:28},
+    {name:'Pasta cuita', unit:'100g', carbsPerRation:25},
+    {name:'Plàtan', unit:'1 mitjà', carbsPerRation:23},
+    {name:'Poma', unit:'1 mitjana', carbsPerRation:15},
+    {name:'Llet', unit:'got (200ml)', carbsPerRation:10},
+    {name:'Iogurt natural', unit:'1 unitat', carbsPerRation:8},
+    {name:'Galetes Maria', unit:'3 unitats', carbsPerRation:18},
+    {name:'Suc de taronja', unit:'got (200ml)', carbsPerRation:20},
+    {name:'Patata bullida', unit:'100g', carbsPerRation:17},
+  ],
+  caregivers:[
+    {name:'Mare', icon:'👩', tolerance:0},
+    {name:'Pare', icon:'👨', tolerance:0},
+    {name:'Iaia', icon:'👵', tolerance:10},
+    {name:'Iaio', icon:'👴', tolerance:10},
+    {name:'Professora', icon:'👩‍🏫', tolerance:0},
+    {name:'Cangur', icon:'🧑', tolerance:0},
+  ]
+};
+
+// Racions actuals (mapa índex → quantitat)
+let mealPortions = {};
+
+// ═══════════════════════════
+//  LOGIN
+// ═══════════════════════════
+function buildLoginGrid() {
+  const grid = document.getElementById('loginGrid');
+  grid.innerHTML = '';
+  config.caregivers.forEach((c, i) => {
+    grid.innerHTML += `
+      <button class="caregiver-btn" onclick="selectCaregiver(${i},this)">
+        <span class="icon">${c.icon}</span>${c.name}
+        ${c.tolerance !== 0 ? `<br/><small style="color:var(--muted);font-size:.7rem">(+${c.tolerance}% marge)</small>` : ''}
+      </button>`;
+  });
+}
+
+let selectedCaregiverIdx = null;
+function selectCaregiver(idx, btn) {
+  document.querySelectorAll('.caregiver-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedCaregiverIdx = idx;
+  document.getElementById('customNameInput').value = '';
+  document.getElementById('loginBtn').disabled = false;
+}
+
+document.getElementById('customNameInput').addEventListener('input', function() {
+  if (this.value.trim()) {
+    document.querySelectorAll('.caregiver-btn').forEach(b => b.classList.remove('selected'));
+    selectedCaregiverIdx = null;
+    document.getElementById('loginBtn').disabled = false;
+  } else {
+    document.getElementById('loginBtn').disabled = selectedCaregiverIdx === null;
+  }
+});
+
+function doLogin() {
+  const customName = document.getElementById('customNameInput').value.trim();
+  if (customName) {
+    currentUser = {name: customName, icon: '🧑', tolerance: 0};
+  } else if (selectedCaregiverIdx !== null) {
+    const c = config.caregivers[selectedCaregiverIdx];
+    currentUser = {...c};
+  } else return;
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'block';
+  document.getElementById('userChip').textContent = currentUser.icon + ' ' + currentUser.name;
+  initDailyScreen();
+}
+
+function doLogout() {
+  currentUser = null;
+  selectedCaregiverIdx = null;
+  mealPortions = {};
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('currentGlucose').value = '';
+  document.getElementById('resultBox').className = 'result-box';
+  document.querySelectorAll('.caregiver-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('customNameInput').value = '';
+  document.getElementById('loginBtn').disabled = true;
+}
+
+// ═══════════════════════════
+//  NAVEGACIÓ
+// ═══════════════════════════
+function showScreen(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'config') loadConfigForm();
+}
+
+// ═══════════════════════════
+//  DAILY SCREEN
+// ═══════════════════════════
+function initDailyScreen() {
+  renderDailyProfile();
+  renderFoodPicker();
+  updateToleranceInfo();
+}
+
+function renderDailyProfile() {
+  const tolerance = currentUser.tolerance;
+  const toleranceHtml = tolerance !== 0
+    ? `<span class="tolerance-active-chip">⚖️ +${tolerance}% marge actiu</span>`
+    : '';
+  document.getElementById('dailyProfileChip').innerHTML = `
+    <div class="profile-chip">
+      <div class="profile-avatar">${currentUser.icon}</div>
+      <div>
+        <div class="profile-name-big">${config.name}
+          <span class="caregiver-active-chip">✓ ${currentUser.name}</span>
+        </div>
+        <div class="profile-meta">Objectiu: ${config.rangeTargetLow}–${config.rangeTargetHigh} mg/dL · Ràtio: ${config.insulinRatio} u/g CH ${toleranceHtml}</div>
+      </div>
+    </div>`;
+}
+
+function renderFoodPicker() {
+  mealPortions = {};
+  const list = document.getElementById('foodPickerList');
+  list.innerHTML = '';
+  config.foods.forEach((f, i) => {
+    mealPortions[i] = 0;
+    list.innerHTML += `
+      <div class="food-item">
+        <div style="flex:1">
+          <div class="food-name">${f.name}</div>
+          <div class="food-detail">1 ració = ${f.unit} · ${f.carbsPerRation}g CH</div>
+        </div>
+        <div class="portion-ctrl">
+          <button class="portion-btn" onclick="changePortions(${i},-1)">−</button>
+          <span class="portion-val" id="portion-${i}">0</span>
+          <button class="portion-btn" onclick="changePortions(${i},+1)">＋</button>
+        </div>
+      </div>`;
+  });
+  updateMealSummary();
+}
+
+function changePortions(idx, delta) {
+  mealPortions[idx] = Math.max(0, (mealPortions[idx] || 0) + delta);
+  document.getElementById('portion-' + idx).textContent = mealPortions[idx];
+  updateMealSummary();
+}
+
+function updateMealSummary() {
+  const tolerance = currentUser ? currentUser.tolerance : 0;
+  const factor = 1 + tolerance / 100;
+
+  let rawCarbs = 0;
+  const summaryDiv = document.getElementById('mealSummary');
+  summaryDiv.innerHTML = '';
+
+  config.foods.forEach((f, i) => {
+    const portions = mealPortions[i] || 0;
+    if (portions > 0) {
+      const carbs = f.carbsPerRation * portions;
+      rawCarbs += carbs;
+      summaryDiv.innerHTML += `
+        <div class="meal-added-item">
+          <span>${f.name} × ${portions} ració${portions > 1 ? 'ns' : ''} (${f.unit})</span>
+          <strong>+${carbs}g CH</strong>
+        </div>`;
+    }
+  });
+
+  const adjustedCarbs = rawCarbs * factor;
+  document.getElementById('totalCarbs').textContent =
+    tolerance !== 0
+      ? `${rawCarbs}g → <span style="color:var(--orange)">${adjustedCarbs.toFixed(1)}g*</span>`
+      : rawCarbs + 'g';
+  document.getElementById('totalCarbs').innerHTML = document.getElementById('totalCarbs').textContent;
+
+  updateToleranceInfo();
+}
+
+function updateToleranceInfo() {
+  if (!currentUser) return;
+  const info = document.getElementById('toleranceInfo');
+  if (currentUser.tolerance !== 0) {
+    info.style.display = 'block';
+    info.textContent = `⚖️ Marge de tolerància actiu per a ${currentUser.name} (+${currentUser.tolerance}%): el sistema calcularà la insulina com si el nen mengés un ${currentUser.tolerance}% més del que has indicat.`;
+  } else {
+    info.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════
+//  GLUCOSA
+// ═══════════════════════════
+function updateGlucoseDisplay() {
+  const val = parseInt(document.getElementById('currentGlucose').value);
+  const el = document.getElementById('glucoseVal');
+  const statusEl = document.getElementById('glucoseStatus');
+  if (isNaN(val)) { el.textContent='—'; el.style.color='var(--muted)'; statusEl.innerHTML=''; return; }
+  el.textContent = val;
+  const {rangeLow,rangeTargetLow,rangeTargetHigh,rangeHigh} = config;
+  let color,statusText,statusColor,bg;
+  if (val<rangeLow){color='var(--red)';statusText='⬇️ HIPOGLICÈMIA';statusColor='var(--red)';bg='var(--red-light)'}
+  else if(val<rangeTargetLow){color='var(--yellow)';statusText='⚡ Una mica baix';statusColor='var(--yellow)';bg='var(--yellow-light)'}
+  else if(val<=rangeTargetHigh){color='var(--green)';statusText='✅ Dins del rang';statusColor='var(--green)';bg='var(--green-light)'}
+  else if(val<=rangeHigh){color='var(--yellow)';statusText='⚡ Una mica alt';statusColor='var(--yellow)';bg='var(--yellow-light)'}
+  else if(val<=300){color='var(--orange)';statusText='⬆️ HIPERGLICÈMIA LLEU';statusColor='var(--orange)';bg='var(--orange-light)'}
+  else{color='var(--red)';statusText='🚨 HIPERGLICÈMIA SEVERA';statusColor='var(--red)';bg='var(--red-light)'}
+  el.style.color=color;
+  statusEl.innerHTML=`<span class="glucose-status" style="background:${bg};color:${statusColor}">${statusText}</span>`;
+}
+
+// ═══════════════════════════
+//  CÀLCUL
+// ═══════════════════════════
+function calculate() {
+  const glucose = parseInt(document.getElementById('currentGlucose').value);
+  if (isNaN(glucose)) { alert('Si us plau, introdueix el nivell de glucosa.'); return; }
+
+  const tolerance = currentUser ? currentUser.tolerance : 0;
+  const factor = 1 + tolerance / 100;
+
+  let rawCarbs = 0;
+  config.foods.forEach((f, i) => { rawCarbs += f.carbsPerRation * (mealPortions[i] || 0); });
+  const totalCarbs = rawCarbs * factor;
+
+  const {rangeLow,rangeTargetLow,rangeTargetHigh,rangeHigh,insulinRatio,correctionFactor,name} = config;
+  const targetMid = (rangeTargetLow + rangeTargetHigh) / 2;
+  const box = document.getElementById('resultBox');
+  const titleEl = document.getElementById('resultTitle');
+  const bodyEl = document.getElementById('resultBody');
+  box.className = 'result-box';
+
+  const toleranceNote = tolerance !== 0
+    ? `<div class="tolerance-note">⚖️ Càlcul ajustat per al marge de tolerància de ${currentUser.name} (+${tolerance}%): ${rawCarbs}g declarats → ${totalCarbs.toFixed(1)}g considerats.</div>`
+    : '';
+
+  // HIPOGLICÈMIA
+  if (glucose < rangeLow) {
+    box.classList.add('show','danger');
+    titleEl.textContent='🚨 ATENCIÓ: Glucosa molt baixa!';
+    bodyEl.innerHTML=`<strong>${name} té una hipoglicèmia. NO INJECTIS INSULINA.</strong><ul>
+      <li>Dona immediatament <strong>15g de sucre ràpid</strong>: got de suc, 3 sobrets de sucre o 4 gominoles.</li>
+      <li>Espera <strong>15 minuts</strong> i torna a mesurar.</li>
+      <li>Si no millora, repeteix i <strong>truca als pares</strong>.</li>
+      <li>Si el nen perd la consciència: <strong>112 immediatament</strong>.</li></ul>`;
+    return;
+  }
+
+  // HIPERGLICÈMIA SEVERA
+  if (glucose > 300) {
+    box.classList.add('show','danger');
+    titleEl.textContent='⚠️ Glucosa molt elevada — Truca als pares';
+    bodyEl.innerHTML=`<strong>Nivell molt alt (${glucose} mg/dL). Contacta els pares o el metge ara.</strong><ul>
+      <li>No administris insulina sense parlar amb els pares.</li>
+      <li>Que el nen begui <strong>aigua</strong> (no sucs).</li>
+      <li>Vigila nàusees, vòmits o alè afruitat (possible cetosi).</li>
+      <li>Si es troba molt malament: <strong>112</strong>.</li></ul>`;
+    return;
+  }
+
+  const insulinForCarbs = totalCarbs * insulinRatio;
+  let insulinCorrection = 0;
+  if (glucose > rangeTargetHigh) {
+    insulinCorrection = Math.round(((glucose - targetMid) / 50) * correctionFactor * 2) / 2;
+  }
+  const totalInsulin = Math.round((insulinForCarbs + insulinCorrection) * 2) / 2;
+
+  // RANG NORMAL
+  if (glucose >= rangeTargetLow && glucose <= rangeTargetHigh) {
+    box.classList.add('show', totalCarbs > 0 ? 'ok' : 'info');
+    if (totalCarbs === 0) {
+      titleEl.textContent='✅ Glucosa correcta';
+      bodyEl.innerHTML=`Nivell de ${name} (${glucose} mg/dL) perfectament dins del rang.<br/>Afegeix els aliments per calcular la insulina.`;
+    } else {
+      titleEl.textContent='✅ Tot correcte — Àpat aprovat';
+      bodyEl.innerHTML=`Glucosa: <strong>${glucose} mg/dL ✓</strong><br/>
+        CH calculats: <strong>${totalCarbs.toFixed(1)}g</strong><br/><br/>
+        <strong>💉 Insulina a injectar:</strong>
+        <span class="insulin-pill">${totalInsulin} u</span>
+        <ul style="margin-top:10px">
+          <li>${insulinForCarbs.toFixed(2)} u per cobrir els carbohidrats</li>
+          <li>No cal correcció (glucosa en rang ✓)</li>
+        </ul>${toleranceNote}`;
+    }
+    return;
+  }
+
+  // UNA MICA BAIX
+  if (glucose < rangeTargetLow) {
+    box.classList.add('show','warn');
+    titleEl.textContent='⚡ Glucosa una mica baixa';
+    if (totalCarbs === 0) {
+      bodyEl.innerHTML=`Nivell de ${name} (${glucose} mg/dL) lleugerament baix. Considera un petit mos (15g CH) i <strong>no injectis</strong> fins tornar a mesurar.`;
+    } else {
+      const adj = Math.max(0, Math.round(insulinForCarbs * 0.8 * 2) / 2);
+      bodyEl.innerHTML=`Glucosa: <strong>${glucose} mg/dL</strong> (lleugerament baixa)<br/>
+        CH calculats: <strong>${totalCarbs.toFixed(1)}g</strong><br/><br/>
+        <strong>💉 Insulina recomanada (reduïda 20%):</strong>
+        <span class="insulin-pill">${adj} u</span>
+        <ul style="margin-top:10px">
+          <li>S'ha reduït la dosi per la glucosa baixa.</li>
+          <li>Assegura't que el nen <strong>menja tot l'àpat</strong>.</li>
+        </ul>${toleranceNote}`;
+    }
+    return;
+  }
+
+  // UNA MICA ALT
+  if (glucose > rangeTargetHigh && glucose <= rangeHigh) {
+    box.classList.add('show','warn');
+    titleEl.textContent='⚡ Glucosa elevada — Correcció inclosa';
+    bodyEl.innerHTML=`Glucosa: <strong>${glucose} mg/dL</strong> (sobre l'objectiu)<br/>
+      CH calculats: <strong>${totalCarbs.toFixed(1)}g</strong><br/><br/>
+      <strong>💉 Insulina a injectar:</strong>
+      <span class="insulin-pill">${totalInsulin} u</span>
+      <ul style="margin-top:10px">
+        <li>${insulinForCarbs.toFixed(2)} u pels carbohidrats</li>
+        <li>${insulinCorrection.toFixed(2)} u de correcció de glucosa</li>
+        <li>Confirma amb els pares si tens dubtes.</li>
+      </ul>${toleranceNote}`;
+    return;
+  }
+
+  // HIPERGLICÈMIA LLEU
+  box.classList.add('show','danger');
+  titleEl.textContent='📈 Glucosa alta — Consulta als pares';
+  bodyEl.innerHTML=`Glucosa: <strong>${glucose} mg/dL</strong> (alta)<br/>
+    CH calculats: <strong>${totalCarbs.toFixed(1)}g</strong><br/><br/>
+    <strong>💉 Insulina estimada:</strong>
+    <span class="insulin-pill">${totalInsulin} u</span>
+    <ul style="margin-top:10px">
+      <li><strong>Confirma la dosi amb els pares</strong> abans d'injectar.</li>
+      <li>Que el nen begui <strong>aigua</strong>.</li>
+      <li>Torna a mesurar en 2 hores.</li>
+    </ul>${toleranceNote}`;
+}
+
+// ═══════════════════════════
+//  EMERGÈNCIES
+// ═══════════════════════════
+const EP = {
+  low:{color:'var(--blue-light)',border:'var(--blue)',tc:'var(--blue)',title:'📉 Hipoglicèmia (< 70 mg/dL)',steps:['Manté la calma. El nen pot estar pàl·lid, temblorós, sudorós o irritable.','Dona IMMEDIATAMENT 15g de sucre ràpid: 1 got de suc de taronja, 3 sobrets de sucre o 4 gominoles.','Fes seure o estirar el nen. NO el deixis sol.','Espera 15 minuts i torna a mesurar.','Si puja sobre 70 mg/dL i el nen es troba bé: pot fer l\'àpat normal.','Si NO millora o perd consciència: TRUCA AL 112 i avisa els pares.']},
+  highMild:{color:'var(--yellow-light)',border:'var(--yellow)',tc:'#92400e',title:'📈 Hiperglicèmia Lleu (180–300 mg/dL)',steps:['El nen pot tenir set, orinar molt o estar cansat. No t\'alarmes.','Assegura\'t que beu molta AIGUA (no sucs ni begudes sucrades).','Avisa els pares perquè confirmin la dosi d\'insulina.','No permetis exercici físic intens fins que la glucosa baixi.','Torna a mesurar en 2 hores.']},
+  highSevere:{color:'var(--orange-light)',border:'var(--orange)',tc:'#7c2d12',title:'⚠️ Hiperglicèmia Severa / Possible Cetosi (> 300 mg/dL)',steps:['AVISA ELS PARES O EL METGE IMMEDIATAMENT.','Senyals de cetosi: nàusees, vòmits, dolor abdominal, alè afruitat, respiració ràpida.','Fes que el nen begui MOLTA AIGUA si pot.','NO administris insulina sense instruccions dels pares o metge.','Manté el nen en repòs absolut.','Si vomita, té dolor fort o perd consciència: TRUCA AL 112 ara.']},
+  critical:{color:'var(--red-light)',border:'var(--red)',tc:'var(--red)',title:'🆘 EMERGÈNCIA CRÍTICA — Nen inconscient o no respon',steps:['🔴 TRUCA AL 112 ARA MATEIX.','NO donies menjar ni beguda si no està conscient.','Col·loca\'l de costat (posició de recuperació) si respira.','Comprova que respira. Si no: inicia RCP si en saps.','Avisa els pares mentre esperes l\'ambulància.','Informa els serveis d\'emergència que té diabetis tipus 1.']}
+};
+function showEmergency(type) {
+  const p=EP[type];const d=document.getElementById('emergDetail');
+  d.className='emerg-detail show';d.style.background=p.color;d.style.border=`2px solid ${p.border}`;
+  d.innerHTML=`<h3 style="color:${p.tc};font-weight:900;margin-bottom:12px">${p.title}</h3>
+    <ul class="step-list">${p.steps.map((s,i)=>`<li><span class="step-num" style="color:${p.tc}">${i+1}</span>${s}</li>`).join('')}</ul>
+    <div style="margin-top:14px;padding:10px;background:rgba(255,255,255,.7);border-radius:8px;font-size:.78rem;font-weight:700;color:${p.tc}">
+    ⚕️ Protocols orientatius. Segueix sempre les instruccions específiques del metge del nen.</div>`;
+  d.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ═══════════════════════════
+//  CONFIG FORM
+// ═══════════════════════════
+function loadConfigForm() {
+  document.getElementById('childName').value = config.name === 'El nen' ? '' : config.name;
+  document.getElementById('childAge').value = config.age;
+  document.getElementById('rangeLow').value = config.rangeLow;
+  document.getElementById('rangeTargetLow').value = config.rangeTargetLow;
+  document.getElementById('rangeTargetHigh').value = config.rangeTargetHigh;
+  document.getElementById('rangeHigh').value = config.rangeHigh;
+  document.getElementById('insulinRatio').value = config.insulinRatio;
+  document.getElementById('correctionFactor').value = config.correctionFactor;
+  renderConfigFoods();
+  renderCaregiverConfig();
+}
+
+function renderConfigFoods() {
+  const list = document.getElementById('configFoodList');
+  list.innerHTML = '';
+  config.foods.forEach((f, i) => {
+    list.innerHTML += `
+      <div class="food-item" style="flex-wrap:wrap;gap:6px">
+        <input type="text" placeholder="Nom" value="${f.name}" style="flex:2;min-width:100px"
+          oninput="config.foods[${i}].name=this.value"/>
+        <input type="text" placeholder="Unitat (p.ex. 100g, 1 llesca)" value="${f.unit||''}" style="flex:2;min-width:100px"
+          oninput="config.foods[${i}].unit=this.value"/>
+        <input type="number" placeholder="g CH/ració" value="${f.carbsPerRation}" style="width:90px;text-align:center"
+          oninput="config.foods[${i}].carbsPerRation=parseFloat(this.value)||0" min="0"/>
+        <button class="remove-btn" onclick="config.foods.splice(${i},1);renderConfigFoods()">×</button>
+      </div>`;
+  });
+}
+
+function addConfigFood() {
+  config.foods.push({name:'', unit:'', carbsPerRation:0});
+  renderConfigFoods();
+}
+
+function renderCaregiverConfig() {
+  const list = document.getElementById('caregiverConfigList');
+  list.innerHTML = '';
+  const icons = ['👩','👨','👵','👴','👩‍🏫','🧑','👩‍⚕️','🧑‍🤝‍🧑'];
+  config.caregivers.forEach((c, i) => {
+    list.innerHTML += `
+      <div class="caregiver-row">
+        <div style="font-size:1.6rem">${c.icon}</div>
+        <div class="caregiver-info">
+          <input class="caregiver-name-edit" type="text" value="${c.name}"
+            oninput="config.caregivers[${i}].name=this.value"/>
+          <div style="margin-top:4px">
+            <label style="font-size:.75rem">Icona:</label>
+            <select style="padding:4px 6px;font-size:.8rem;border-radius:6px;border:1px solid var(--border);margin-left:4px"
+              onchange="config.caregivers[${i}].icon=this.value;renderCaregiverConfig()">
+              ${icons.map(ic=>`<option value="${ic}" ${ic===c.icon?'selected':''}>${ic}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="tolerance-input-wrap">
+          Marge:
+          <input type="number" value="${c.tolerance}" min="-30" max="50" step="5"
+            oninput="config.caregivers[${i}].tolerance=parseFloat(this.value)||0" style="width:60px"/>
+          %
+          <span style="font-size:.72rem;color:var(--muted)">(0 = sense ajust)</span>
+        </div>
+        <button class="remove-btn" onclick="config.caregivers.splice(${i},1);renderCaregiverConfig()">×</button>
+      </div>`;
+  });
+}
+
+function addCaregiverConfig() {
+  config.caregivers.push({name:'Nou cuidador', icon:'🧑', tolerance:0});
+  renderCaregiverConfig();
+}
+
+function saveConfig() {
+  config.name = document.getElementById('childName').value || 'El nen';
+  config.age = document.getElementById('childAge').value;
+  config.rangeLow = parseFloat(document.getElementById('rangeLow').value)||70;
+  config.rangeTargetLow = parseFloat(document.getElementById('rangeTargetLow').value)||80;
+  config.rangeTargetHigh = parseFloat(document.getElementById('rangeTargetHigh').value)||140;
+  config.rangeHigh = parseFloat(document.getElementById('rangeHigh').value)||180;
+  config.insulinRatio = parseFloat(document.getElementById('insulinRatio').value)||0.1;
+  config.correctionFactor = parseFloat(document.getElementById('correctionFactor').value)||1;
+  const badge = document.getElementById('savedBadge');
+  badge.classList.add('show');
+  setTimeout(()=>badge.classList.remove('show'),3000);
+  buildLoginGrid();
+}
+
+// ═══════════════════════════
+//  INIT
+// ═══════════════════════════
+buildLoginGrid();
+document.getElementById('customNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginBtn').disabled) doLogin();
+});
+</script>
+</body>
+</html>
